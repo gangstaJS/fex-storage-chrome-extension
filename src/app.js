@@ -1,15 +1,16 @@
-console.log('Content page');
+import Vue from 'vue'
+import KeysStorage from 'components/KeysStorage.vue'
 
-var port = chrome.runtime.connect();
+Vue.use(VueReusableMaterialComponents);
 
-port.postMessage({ev: 'INJECT'});
-
-window.addEventListener('message', function(event) {
-	if (event.source != window) {
-		return;
-	}
-
-	if (event.data.type && (event.data.type == 'OBJECT_CREATED')) {
-		port.postMessage({ev: 'OBJECT_CREATED', data: event.data.data});
-	}
-}, false);
+new Vue({
+  el: '#app',
+  components: {
+    KeysStorage
+  },
+  data() {
+    return {
+      test: 'Keys Storage'
+    }
+  }
+})

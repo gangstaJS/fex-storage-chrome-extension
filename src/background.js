@@ -1,11 +1,11 @@
-import { addObject, removeObject } from './utils';
+import Storage from './shared/storage';
 
 
 chrome.webRequest.onCompleted.addListener(function (details) {    
     let match = /^http:\/\/fex\.net\/j_object_delete\/(\d+)\/?$/i.exec(details.url);
     
     if(match && match[1]) {
-      removeObject(match[1]);
+      Storage.rmObjectLocal(match[1]);
     } 
 
 },{
@@ -33,7 +33,7 @@ chrome.runtime.onConnect.addListener(function(port) {
             });
         break;
         case 'OBJECT_CREATED':
-          addObject(msg.data.token)
+          Storage.addObject(msg.data.token);
           break;
       default:
       break;

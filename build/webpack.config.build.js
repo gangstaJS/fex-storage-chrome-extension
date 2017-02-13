@@ -8,10 +8,11 @@ const sourcePath =  './src';
 
 const wpConfig = {
   entry: {
-    'app': `${sourcePath}/app.js`,
+    'app': [`${sourcePath}/app.js`],
+    'content-page': `${sourcePath}/content-page.js`,
     'background': [`${sourcePath}/background.js`, 'whatwg-fetch'],
     'injected': `${sourcePath}/injected.js`,
-    vendors: 'vue',
+    vendors: ['vue', 'vue-material'],
   },
   output: {
     path: path.join('./', 'dist'),
@@ -19,7 +20,9 @@ const wpConfig = {
   },
 
   resolve: {
-    alias: {},
+    alias: {
+      'vue$': 'vue/dist/vue.common.js'
+    },
     extensions: ['', '.js', '.vue'],
     root: [
       // path.resolve(__dirname),
@@ -53,6 +56,10 @@ const wpConfig = {
         loaders: ['style', 'css?root=' + __dirname + sourcePath, 'sass-loader', 'sass'],
       },
       {
+        test: /\.css/,
+        loaders: ['style', 'css?root=' + __dirname + sourcePath, 'css-loader', 'css'],
+      },
+      {
         test: /\.vue$/,
         loader: 'vue-loader',
 
@@ -66,6 +73,10 @@ const wpConfig = {
   },
   plugins: [
     new webpack.optimize.DedupePlugin(),
+    new CopyWebpackPlugin([
+      {from: 'src/libs', to: ''},
+      {from: 'iconfont', to: 'iconfont'},
+    ]),
     // new webpack.DefinePlugin({})
   ],
   postcss: [ autoprefixer({ browsers: ['last 2 versions'] }) ],
@@ -73,8 +84,10 @@ const wpConfig = {
   sassLoader: {
     includePaths: [path.resolve(__dirname, sourcePath)]
   },
-  devtool: '#source-map',
+  // devtool: '#source-map',
   debug: false,
+  // debug:true,
+  // devtool:"#inline-source-map",
 
   // devServer: {
   //   host: '0.0.0.0',

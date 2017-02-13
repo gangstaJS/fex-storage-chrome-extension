@@ -6,6 +6,8 @@
   "version": "1.1",
   "version_name": "1.1 beta",
   "author": "GangstaJS",
+  
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
 
   "browser_action": {
     "default_popup": "index.html"
@@ -20,7 +22,7 @@
   "content_scripts": [
     {
       "matches": ["http://fex.net/*"],
-      "js": ["/dist/app.build.js"],
+      "js": ["/dist/content-page.build.js"],
       "run_at": "document_end"
     }
   ],
@@ -34,6 +36,7 @@
     "<all_urls>","webRequest","webRequestBlocking",
     "background",
     "notifications",
-    "cookies"
+    "cookies",
+    "storage"
   ]
 }
