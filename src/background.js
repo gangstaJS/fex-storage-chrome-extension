@@ -1,41 +1,32 @@
 import Storage from './shared/storage';
-
+import { 
+  INJECT_EV, 
+  OBJECT_CREATED_EV, 
+  INJECT_CODE_SNIPPET,
+  FILTER_URL_OBJECT_DELETE,
+  DELETE_OBJECT_REGEX 
+} from './constants';
 
 chrome.webRequest.onCompleted.addListener(function (details) {    
-    let match = /^http:\/\/fex\.net\/j_object_delete\/(\d+)\/?$/i.exec(details.url);
+    let match = DELETE_OBJECT_REGEX.exec(details.url);
     
     if(match && match[1]) {
       Storage.rmObjectLocal(match[1]);
     } 
-
-},{
-    urls: ["http://fex.net/j_object_delete/*"]
-},["responseHeaders"]);
-
-const actualCode = `
-  var s = document.createElement('script');
-  s.src = chrome.extension.getURL('/dist/injected.build.js')
-  s.onload = function() {
-    this.remove();
-  };
-  (document.head || document.documentElement).appendChild(s);
-`;
+},{ urls: [FILTER_URL_OBJECT_DELETE] },["responseHeaders"]);
 
 chrome.runtime.onConnect.addListener(function(port) {
   port.onMessage.addListener(function(msg) {
     switch (msg.ev) {
-      case 'INJECT':
-      chrome.tabs.query({currentWindow: true, active : true},
-            function(tabArray) {
-              if(!tabArray) return;
-              
-              chrome.tabs.executeScript(tabArray[0].id, {code: actualCode, runAt: 'document_end'}, function() {});
-            });
-        break;
-        case 'OBJECT_CREATED':
-          Storage.addObject(msg.data.token);
-          break;
-      default:
+      case INJECT_EV:
+        chrome.tabs.query({currentWindow: true, active : true},function(tabArray) {
+          if(!tabArray) return;  
+          
+          chrome.tabs.executeScript(tabArray[0].id, {code: INJECT_CODE_SNIPPET, runAt: 'document_end'}, Function.prototype);
+        });
+      break;
+      case OBJECT_CREATED_EV:
+        Storage.addObject(msg.data.token);
       break;
         
     }

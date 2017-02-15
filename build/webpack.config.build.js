@@ -76,6 +76,9 @@ const wpConfig = {
     new CopyWebpackPlugin([
       {from: 'src/libs', to: ''},
       {from: 'iconfont', to: 'iconfont'},
+      {from: 'icons', to: 'icons'},
+      {from: 'index.html', to: 'index.html'},
+      {from: 'manifest.json', to: 'manifest.json'},
     ]),
     // new webpack.DefinePlugin({})
   ],

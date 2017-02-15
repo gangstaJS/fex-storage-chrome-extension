@@ -1,12 +1,19 @@
 <template>
     <div class="keys-storage">
       <div class="keys-storage__head">
-        <m-button raised primary ripple>Add</m-button> 
-        <m-button raised primary accent v-if="showCtrls">Remove</m-button>
+        <m-button raised primary ripple @click.native="addObject" :disabled="addDisabled">Add</m-button> 
+        <m-button raised primary accent v-if="showCtrls" @click.native="rmSelected">Remove</m-button>
       </div>
       
       <div class="keys-storage__body">
-        <m-table @select="onSelect">
+        <div class="keys-storage__loader" v-if="isFetchingKays">
+          <div>
+            Loading...
+          </div>
+          <m-progress indeterminate></m-progress>
+        </div>
+        <h3 v-if="!hasObjects">Keys not found</h3>
+        <m-table @select="onSelect" v-if="hasObjects">
             <m-table-head>
                 <m-table-row>
                     <m-table-h>Key</m-table-h>
@@ -28,11 +35,20 @@
 </template>
 
 <style lang="scss" scoped>
+  h3 {
+    text-align: center;
+  }
+  
   .keys-storage {
     width: 500px;
-    min-height: 200px;
-    max-height: 600px;
     margin: 10px;
+    
+    &__loader {
+      position: absolute;
+      top: 0; bottom: 0; left: 0; right: 0;
+      background: #fff;
+      z-index: 99;
+    }
     
     &__head {
       min-height: 40px;
@@ -43,6 +59,7 @@
     
     &__body {
       margin-top: 15px;
+      position: relative;
       
       > table {
         width: 100%
@@ -66,24 +83,49 @@
           onSelect(objects) {
             if(Object.keys(objects).length) {
               this.showCtrls = true;
+              this.selected = objects;
             } else {
               this.showCtrls = false;
+              this.selected = null;
             }
           },
           
+          rmSelected() {
+            let deferreds = [];
+            
+            Object.keys(this.selected).forEach(k => {
+              deferreds.push(Storage.rmObject(this.selected[k].token));
+            });
+            
+            Promise.all(deferreds).then(res => {
+              this.fetchKeys()
+            })
+          },
+          
+          addObject() {
+            this.addDisabled = true;
+            Storage.newObject().then(res => {
+              this.addDisabled = false;
+              window.open(res.url, '_blank');
+            })
+          },
+          
           fetchKeys() {
+            this.isFetchingKays = true;
             Storage.getAll().then(res => {
+              this.isFetchingKays = false;
               
-              
-              console.log(res.data);
-              
-              if(!res.data) return;
+              if(!res.data || !Object.keys(res.data).length) {
+                this.hasObjects = false;
+                return;
+              }
               
               Object.keys(res.data).forEach(k => {
                 res.data[k].countdown = moment(res.data[k].create_time*1000).add(7, 'days').countdown().toString();
               });
               
               this.keys = res.data;
+              this.hasObjects = true;
             });
           }
         },
@@ -92,6 +134,10 @@
             return {
               keys: null,
               showCtrls: false,
+              hasObjects: false,
+              addDisabled: false,
+              selected: {},
+              isFetchingKays: true,
             }
         }
     }
